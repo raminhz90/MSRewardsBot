@@ -1,0 +1,137 @@
+﻿<Window
+    x:Class="MicrosoftRewardsBot.Views.ShellWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:properties="clr-namespace:MicrosoftRewardsBot.Properties"
+    xmlns:templateSelectors="clr-namespace:MicrosoftRewardsBot.TemplateSelectors"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:viewmodels="clr-namespace:MicrosoftRewardsBot.ViewModels"
+    Title="{x:Static properties:Resources.AppDisplayName}"
+    d:DataContext="{d:DesignInstance Type=viewmodels:ShellViewModel}"
+    ui:TitleBar.ExtendViewIntoTitleBar="True"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    mc:Ignorable="d">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadedCommand}" />
+        </i:EventTrigger>
+        <i:EventTrigger EventName="Unloaded">
+            <i:InvokeCommandAction Command="{Binding UnloadedCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
+    <Window.Resources>
+        <!--<templateSelectors:MenuItemTemplateSelector
+            x:Key="MenuItemTemplateSelector">
+            <templateSelectors:MenuItemTemplateSelector.ItemTemplate>
+                <DataTemplate DataType="{x:Type controls:HamburgerMenuGlyphItem}">
+                    <Grid Height="48">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Column="0"
+                            FontSize="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontFamily="Segoe MDL2 Assets"
+                            Text="{Binding Glyph}"
+                            ToolTip="{Binding Label}" />
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            Text="{Binding Label}" />
+                    </Grid>
+                </DataTemplate>
+            </templateSelectors:MenuItemTemplateSelector.ItemTemplate>
+            <templateSelectors:MenuItemTemplateSelector.ItemTemplate>
+                <DataTemplate DataType="{x:Type controls:HamburgerMenuImageItem}">
+                    <Grid Height="48">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Ellipse
+                            Grid.Column="0"
+                            Width="24"
+                            Height="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            ToolTip="{Binding Label}">
+                            <Ellipse.Fill>
+                                <ImageBrush ImageSource="{Binding Thumbnail}" />
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            Text="{Binding Label}" />
+                    </Grid>
+                </DataTemplate>
+            </templateSelectors:MenuItemTemplateSelector.ItemTemplate>
+        </templateSelectors:MenuItemTemplateSelector>-->
+        <templateSelectors:MenuItemTemplateSelector x:Key="selector">
+            <templateSelectors:MenuItemTemplateSelector.ItemTemplate>
+                <DataTemplate>
+                    <ui:NavigationViewItem Content="{Binding Label, Mode=OneTime}" ToolTipService.ToolTip="Ramin">
+                        <ui:NavigationViewItem.Icon>
+                            <ui:SymbolIcon Symbol="{Binding Glyph, Mode=OneTime}" />
+                        </ui:NavigationViewItem.Icon>
+                    </ui:NavigationViewItem>
+                </DataTemplate>
+            </templateSelectors:MenuItemTemplateSelector.ItemTemplate>
+        </templateSelectors:MenuItemTemplateSelector>
+    </Window.Resources>
+    <Window.Content>
+        <!--<controls:HamburgerMenu
+            x:Name="hamburgerMenu"
+            HamburgerButtonName="{x:Static properties:Resources.ShellHamburgerButtonName}"
+            IsPaneOpen="False"
+            DisplayMode="CompactInline"
+            ItemsSource="{Binding MenuItems}"
+            SelectedItem="{Binding SelectedMenuItem}"
+            ItemCommand="{Binding MenuItemInvokedCommand}"
+            OptionsItemsSource="{Binding OptionMenuItems}"
+            SelectedOptionsItem="{Binding SelectedOptionsMenuItem}"
+            OptionsItemCommand="{Binding OptionsMenuItemInvokedCommand}"
+            OptionsItemTemplateSelector="{StaticResource MenuItemTemplateSelector}"
+            ItemTemplateSelector="{StaticResource MenuItemTemplateSelector}">
+            <controls:HamburgerMenu.Content>
+                <Frame
+                    x:Name="shellFrame"
+                    Grid.Row="1"
+                    NavigationUIVisibility="Hidden"
+                    Focusable="False" />
+            </controls:HamburgerMenu.Content>
+        </controls:HamburgerMenu>-->
+        <Grid>
+            <ui:NavigationView
+                IsBackButtonVisible="Collapsed"
+                IsSettingsVisible="True"
+                MenuItemTemplateSelector="{StaticResource selector}"
+                MenuItemsSource="{Binding MenuItems}"
+                PaneDisplayMode="LeftCompact"
+                SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}"
+                Style="{DynamicResource NavigationViewStyle}">
+
+
+
+                <ui:NavigationView.Content>
+                    <Frame
+                        x:Name="shellFrame"
+                        Grid.Row="1"
+                        Focusable="False"
+                        NavigationUIVisibility="Hidden" />
+                </ui:NavigationView.Content>
+            </ui:NavigationView>
+        </Grid>
+
+    </Window.Content>
+</Window>

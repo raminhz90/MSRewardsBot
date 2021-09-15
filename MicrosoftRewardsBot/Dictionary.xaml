@@ -1,0 +1,63 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:ModernWpf.Controls;assembly=ModernWpf"
+    xmlns:local="clr-namespace:ModernWpf.Controls;assembly=ModernWpf.Controls"
+    xmlns:ui="http://schemas.modernwpf.com/2019">
+
+
+    <Style TargetType="ScrollViewer">
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+    <ControlTemplate x:Key="ButtonTemplate">
+        <Grid Margin="5" Background="{DynamicResource SystemControlBackgroundListMediumBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border Background="{DynamicResource SystemControlPageBackgroundBaseLowBrush}" Style="{DynamicResource BorderTipSuccess}">
+                <Label
+                    Grid.Row="0"
+                    Margin="10,0,10,0"
+                    HorizontalAlignment="Center"
+                    Content="{Binding UserName}"
+                    FontSize="{DynamicResource LargeFontSize}"
+                    Foreground="{DynamicResource SystemControlPageBackgroundAltHighBrush}" />
+
+            </Border>
+            <ui:SimpleStackPanel
+                Grid.Row="1"
+                Margin="5"
+                Style="{DynamicResource OptionsPanelStyle}">
+
+                <TextBlock Text="{Binding TotalPoints, StringFormat=Total \Points : {0}}" />
+
+                <TextBlock Text="{Binding LastRun, StringFormat=Last \Run :{0:d}}" />
+                <ui:ToggleSwitch ui:ControlHelper.Header="Auto Search :" IsOn="{Binding IsActive}" />
+                <ui:ToggleSwitch
+                    ui:ControlHelper.Header="Last Run Status :"
+                    IsOn="{Binding IsError}"
+                    OffContent="Error Completing Search"
+                    OnContent="Success" />
+
+            </ui:SimpleStackPanel>
+        </Grid>
+    </ControlTemplate>
+    <Style x:Key="OptionsPanelStyle" TargetType="ui:SimpleStackPanel">
+        <Setter Property="Spacing" Value="12" />
+        <Style.Resources>
+            <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
+                <Setter Property="MinWidth" Value="100" />
+            </Style>
+            <Style BasedOn="{StaticResource DefaultTextBoxStyle}" TargetType="TextBox">
+                <Setter Property="MinWidth" Value="100" />
+            </Style>
+            <Style BasedOn="{StaticResource {x:Type DatePicker}}" TargetType="DatePicker">
+                <Setter Property="MinWidth" Value="100" />
+            </Style>
+        </Style.Resources>
+    </Style>
+</ResourceDictionary>

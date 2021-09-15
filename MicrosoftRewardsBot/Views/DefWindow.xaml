@@ -1,0 +1,52 @@
+﻿<Window
+    x:Class="MicrosoftRewardsBot.Views.DefWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:MicrosoftRewardsBot.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:templateSelectors="clr-namespace:MicrosoftRewardsBot.TemplateSelectors"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    Width="640"
+    Height="500"
+    MinWidth="640"
+    MinHeight="500"
+    Topmost="False"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <templateSelectors:MenuItemTemplateSelector x:Key="selector">
+            <templateSelectors:MenuItemTemplateSelector.ItemTemplate>
+                <DataTemplate>
+                    <ui:NavigationViewItem Content="{Binding Label, Mode=OneTime}" ToolTipService.ToolTip="Ramin">
+                        <ui:NavigationViewItem.Icon>
+                            <!--<ui:FontIcon  FontFamily="Segoe MDL2 Assets"  Glyph="{Binding Glyph}" />-->
+                            <ui:SymbolIcon Symbol="{Binding Glyph, Mode=OneTime}" />
+                        </ui:NavigationViewItem.Icon>
+                    </ui:NavigationViewItem>
+                </DataTemplate>
+            </templateSelectors:MenuItemTemplateSelector.ItemTemplate>
+        </templateSelectors:MenuItemTemplateSelector>
+    </Window.Resources>
+    <Grid>
+        <ui:NavigationView
+            IsBackButtonVisible="Collapsed"
+            IsSettingsVisible="False"
+            MenuItemTemplateSelector="{StaticResource selector}"
+            MenuItemsSource="{Binding MenuItems}"
+            PaneDisplayMode="LeftCompact"
+            SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}"
+            Style="{DynamicResource NavigationViewStyle}">
+
+
+
+            <ui:NavigationView.Content>
+                <Frame
+                    x:Name="shellFrame"
+                    Grid.Row="1"
+                    Focusable="False"
+                    NavigationUIVisibility="Hidden" />
+            </ui:NavigationView.Content>
+        </ui:NavigationView>
+    </Grid>
+</Window>

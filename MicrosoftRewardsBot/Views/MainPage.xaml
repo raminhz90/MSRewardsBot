@@ -1,0 +1,68 @@
+﻿<Page
+    x:Class="MicrosoftRewardsBot.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:uc="clr-namespace:MicrosoftRewardsBot.CustomControls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:properties="clr-namespace:MicrosoftRewardsBot.Properties"
+    mc:Ignorable="d"
+    d:DesignHeight="450" d:DesignWidth="800">
+    <Page.Resources>
+        <DataTemplate x:Key="ItemsRepeaterItemTemplate">
+            <ui:ThemeShadowChrome Depth="55" IsShadowEnabled="True">
+                <Button Template="{DynamicResource ButtonTemplate}"/>
+            </ui:ThemeShadowChrome>
+        </DataTemplate>
+    </Page.Resources>
+        <Grid Background="{DynamicResource SystemControlAcrylicElementBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock
+            Style="{StaticResource PageTitleStyle}"
+            Margin="{StaticResource MediumLeftMargin}"
+            Text="{x:Static properties:Resources.MainPageTitle}"
+            Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+        <Grid
+            Grid.Row="1"
+            Margin="{StaticResource MediumLeftRightMargin}" 
+            >
+            <DataGrid Visibility="Hidden" ItemsSource="{Binding AccountList}" Style="{DynamicResource DefaultDataGridStyle}"
+                      CanUserAddRows="False" IsReadOnly="True" SelectionMode="Single" SelectionUnit="FullRow" AutoGenerateColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="UserName" Binding="{Binding UserName}" Width="*"/>
+                    <DataGridTextColumn Header="Total Points" Binding="{Binding TotalPoints}" Width="*"/>
+                    <DataGridCheckBoxColumn Header="UserName" Binding="{Binding IsActive}" Width="*"/>
+                    <DataGridCheckBoxColumn Header="UserName" Binding="{Binding IsError}" Width="*"/>
+                    <DataGridTextColumn Header="UserName" Binding="{Binding LastRun}" Width="*"/>
+                </DataGrid.Columns>
+
+            </DataGrid>
+            <ScrollViewer VerticalScrollBarVisibility="Visible" >
+                <ui:ItemsRepeater  ItemsSource="{Binding AccountList}" >
+                    <ui:ItemsRepeater.Layout>
+                        <ui:UniformGridLayout MinColumnSpacing="28"
+                                              MinRowSpacing="28"
+                                              ItemsJustification="SpaceAround"/>
+                    </ui:ItemsRepeater.Layout>
+                    <ui:ItemsRepeater.ItemTemplate>
+                        <DataTemplate>
+                            <ui:ThemeShadowChrome Depth="55" IsShadowEnabled="True">
+                                <uc:UserInfoCard/>
+                            </ui:ThemeShadowChrome>
+                        </DataTemplate>
+                    </ui:ItemsRepeater.ItemTemplate>
+
+                </ui:ItemsRepeater>
+
+            </ScrollViewer>
+
+            <!--<Label Content="dfgg" hc:TitleElement.Title="dgsdfsdf"/>-->
+        </Grid>
+
+    </Grid>
+</Page>

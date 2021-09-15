@@ -1,0 +1,73 @@
+﻿<UserControl x:Class="MicrosoftRewardsBot.CustomControls.ProgressCircle"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MicrosoftRewardsBot.CustomControls"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             mc:Ignorable="d"
+             d:DesignHeight="271" d:DesignWidth="255"
+             
+             x:Name="root"
+             >
+
+
+
+
+
+    <Viewbox Height="{Binding Width,ElementName=root}">
+        
+    
+    <Grid Margin="5" >
+       
+        <hc:CircleProgressBar Panel.ZIndex="0" Value="{Binding ProgressValue,ElementName=root}" ShowText="False"  Background="{DynamicResource MahApps.Brushes.Button.Flat.Background.Pressed}" ArcThickness="{Binding ActualHeight,ElementName=root}" Width="{Binding ActualHeight,ElementName=root}" Height="{Binding ActualHeight,ElementName=root}"   IsHitTestVisible="False" />
+
+        <Grid Height="{Binding ActualWidth,RelativeSource={RelativeSource self}}" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="60*"/>
+                <ColumnDefinition Width="20*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="20*"/>
+            </Grid.RowDefinitions>
+            
+            <Grid Grid.Column="1" Grid.Row="1">
+
+                <Ellipse  Grid.ColumnSpan="3" Grid.RowSpan="3" Fill="{Binding MiddleCircleColor,ElementName=root}" Panel.ZIndex="0" Effect="{DynamicResource GrayScaleEffect}" RenderTransformOrigin="0.5, 0.5">
+                    <Ellipse.RenderTransform>
+                        <RotateTransform Angle="{Binding MiddleCircleAngle,ElementName=root}"/>
+                    </Ellipse.RenderTransform>
+                    
+                </Ellipse>
+
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20*"/>
+                        <ColumnDefinition Width="60*"/>
+                        <ColumnDefinition Width="20*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="20*"/>
+                        <RowDefinition Height="60*"/>
+                        <RowDefinition Height="20*"/>
+                    </Grid.RowDefinitions>
+                    <Button Style="{DynamicResource MahApps.Styles.Button.Circle}" Panel.ZIndex="3"  Content="{Binding BtnText,ElementName=root}" Command="{Binding BtnCommand,ElementName=root}"  BorderBrush="Black" Background="{DynamicResource MahApps.Brushes.AccentBase}" Grid.Column="1" FontSize="{DynamicResource MediumFontSize}" Grid.Row="1"/>
+
+
+
+                </Grid>
+
+            </Grid>
+        </Grid>
+    </Grid>
+    </Viewbox>
+</UserControl>
+
+
+
+
+
