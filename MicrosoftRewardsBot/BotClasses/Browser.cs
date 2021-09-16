@@ -1,17 +1,21 @@
-﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
-using MSRewardsBOT.Core.Models;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Support.UI;
-using SeleniumExtras.WaitHelpers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.Toolkit.Mvvm.ComponentModel;
+
+using MSRewardsBOT.Core.Models;
+
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
+
+using SeleniumExtras.WaitHelpers;
 
 namespace MicrosoftRewardsBot.BotClasses
 
@@ -26,30 +30,33 @@ namespace MicrosoftRewardsBot.BotClasses
         }
         private readonly int MaxPcSearch = int.Parse(Properties.Resources.MaxPCSearch);
         private readonly int MaxMobileSearch = int.Parse(Properties.Resources.MaxMobileSearch);
-        private static string BING_SEARCH_URL = "https://www.bing.com/search";
-        private static string DASHBOARD_URL = "https://account.microsoft.com/rewards/dashboard";
-
+        private readonly string BING_SEARCH_URL = Properties.Resources.BING_SEARCH_URL;
+        private static string DASHBOARD_URL = Properties.Resources.Dashboard_Url;
         private ChromeDriverService driverService;
-        private Account _account;
-        private int _PcSearch;
-        private int _MobileSearch;
-        private int _OffersAvailable;
+        private int PcSearch;
+        private int MobileSearch;
+        private int _IncompleteOffers;
+        private ChromeDriver ChromeDriver;
+        private List<string> searchqueries = new List<string>();
+        // -------------------------Property--------------------------------
+        private Account _Account;
+        public Account Account { get => _Account; set => SetProperty(ref _Account, value); }
         private int _MaxDesktopPoints = 200;
+        public int MaxDesktopPoints { get => _MaxDesktopPoints; set => SetProperty(ref _MaxDesktopPoints , value); }
         private int _MaxMobilePoints = 200;
+        public int MaxMobilePoints { get => _MaxMobilePoints; set => SetProperty(ref _MaxMobilePoints , value); }
         private int _MaxEdgePoints = 200;
         private int _EdgePoints;
-
-        private int _proxyport;
-        private List<string> searchqueries = new List<string>();
-        private ChromeDriver chromeDriver;
+        public int EdgePoints { get => _EdgePoints; set => SetProperty(ref _EdgePoints , value); }
+        private int Proxyport;
 
         public Browser(Account account, int proxyport = 9050)
         {
-            _account = account;
+            Account = account;
             Proxyport = proxyport;
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnAppExit);
         }
-        public async Task Waiter(int mili = 100)
+        public async Task Waiter(int Time = 100)
         {
             Thread.Sleep(mili);
         }
@@ -70,7 +77,7 @@ namespace MicrosoftRewardsBot.BotClasses
             {
                 return;
             }
-            await MobileSearch();
+            await SearchMobileAsync();
 
             OnAppExit(1, new EventArgs());
             Thread.Sleep(100);
@@ -87,18 +94,6 @@ namespace MicrosoftRewardsBot.BotClasses
             await Dailyoffers();
             OnAppExit(1, new EventArgs());
         }
-
-        public Account Account { get => _account; set => SetProperty(ref _account, value); }
-
-
-        public int Proxyport { get => _proxyport; set => _proxyport = value; }
-        public int PcSearch { get => _PcSearch; set => _PcSearch = value; }
-        public int MobileSearchV { get => _MobileSearch; set => SetProperty(ref _MobileSearch, value); }
-        public int EdgePoints { get => _EdgePoints; set => _EdgePoints = value; }
-        public int MaxDesktopPoints { get => MaxDesktopPoints1; set => MaxDesktopPoints1 = value; }
-        public int MaxMobilePoints { get => _MaxMobilePoints; set => _MaxMobilePoints = value; }
-        public int MaxDesktopPoints1 { get => _MaxDesktopPoints; set => _MaxDesktopPoints = value; }
-
 
         public async Task<bool> Browsersetup(BrowserMode mode)
         {
@@ -129,6 +124,7 @@ namespace MicrosoftRewardsBot.BotClasses
             chromeOptions.AddArgument("--disable-blink-features=AutomationControlled");
             if (mode == BrowserMode.Desktop)
             {
+
                 chromeOptions.AddArgument("user-data-dir=" + Properties.Resources.ChromeProfileLocation + "de" + Account.ID + "\\");
                 chromeOptions.AddArgument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36 Edg/93.0.961.44");
             }
@@ -138,8 +134,7 @@ namespace MicrosoftRewardsBot.BotClasses
                 chromeOptions.AddArgument("user-data-dir=" + Properties.Resources.ChromeProfileLocation + "mo" + Account.ID + "\\");
                 chromeOptions.AddArgument("user-agent=Mozilla / 5.0(Linux; Android 10; Redmi Note 9 Pro) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 77.0.3865.116 Mobile Safari/ 537.36 EdgA / 46.06.4.5161");
             }
-            chromeDriver = new ChromeDriver(driverService, chromeOptions);
-            chromeDriver.Manage().Cookies
+            ChromeDriver = new ChromeDriver(driverService, chromeOptions);
             return true;
         }
 
@@ -149,18 +144,21 @@ namespace MicrosoftRewardsBot.BotClasses
         {
 
 
-            chromeDriver.Navigate().GoToUrl(@"https://login.live.com/");
-            //driver.Navigate().GoToUrl(@"https://api.ipify.org");
+            ChromeDriver.Navigate().GoToUrl(@"https://login.live.com/");
+
+
+
+
             Thread.Sleep(1000);
-            if (chromeDriver.Url == @"https://login.live.com/")
+            if (ChromeDriver.Url == @"https://login.live.com/")
             {
-                WebDriverWait wait = new WebDriverWait(chromeDriver, TimeSpan.FromSeconds(10));
+                WebDriverWait wait = new WebDriverWait(ChromeDriver, TimeSpan.FromSeconds(10));
                 try
                 {
 
                     _ = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("loginfmt")));
-                    chromeDriver.FindElement(By.Name("loginfmt")).SendKeys(Account.UserName);
-                    chromeDriver.FindElement(By.Name("loginfmt")).SendKeys(Keys.Return);
+                    ChromeDriver.FindElement(By.Name("loginfmt")).SendKeys(Account.UserName);
+                    ChromeDriver.FindElement(By.Name("loginfmt")).SendKeys(Keys.Return);
                 }
                 catch (Exception e)
                 {
@@ -169,24 +167,24 @@ namespace MicrosoftRewardsBot.BotClasses
                 Thread.Sleep(1000);
                 try
                 {
-                    if (chromeDriver.FindElements(By.Name("passwd")).Count != 0)
+                    if (ChromeDriver.FindElements(By.Name("passwd")).Count != 0)
                     {
                         _ = wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.Name("passwd")));
-                        chromeDriver.FindElement(By.Name("passwd")).SendKeys(Account.Password);
+                        ChromeDriver.FindElement(By.Name("passwd")).SendKeys(Account.Password);
                         Thread.Sleep(100);
                         //chromeDriver.FindElement(By.Id("idChkBx_PWD_KMSI0Pwd")).Click();
-                        chromeDriver.FindElement(By.Name("passwd")).SendKeys(Keys.Return);
-                        chromeDriver.FindElement(By.Id("idSIButton9")).Click();
+                        ChromeDriver.FindElement(By.Name("passwd")).SendKeys(Keys.Return);
+                        ChromeDriver.FindElement(By.Id("idSIButton9")).Click();
                     }
                     else
                     {
-                        chromeDriver.FindElement(By.XPath("//*[@id=\"idA_PWD_SwitchToPassword\"]")).Click();
+                        ChromeDriver.FindElement(By.XPath("//*[@id=\"idA_PWD_SwitchToPassword\"]")).Click();
                         _ = wait.Until(ExpectedConditions.ElementToBeClickable(By.Name("passwd")));
-                        chromeDriver.FindElement(By.Name("passwd")).SendKeys(Account.Password);
+                        ChromeDriver.FindElement(By.Name("passwd")).SendKeys(Account.Password);
                         Thread.Sleep(100);
-                        chromeDriver.FindElement(By.Id("idChkBx_PWD_KMSI0Pwd")).Click();
-                        chromeDriver.FindElement(By.Name("passwd")).SendKeys(Keys.Return);
-                        chromeDriver.FindElement(By.Id("idSIButton9")).Click();
+                        ChromeDriver.FindElement(By.Id("idChkBx_PWD_KMSI0Pwd")).Click();
+                        ChromeDriver.FindElement(By.Name("passwd")).SendKeys(Keys.Return);
+                        ChromeDriver.FindElement(By.Id("idSIButton9")).Click();
                     }
 
                 }
@@ -224,8 +222,8 @@ namespace MicrosoftRewardsBot.BotClasses
             }
             try
             {
-                chromeDriver.Navigate().GoToUrl(DASHBOARD_URL);
-                chromeDriver.FindElement(By.Id("error-title")).Text.Contains("not available");
+                ChromeDriver.Navigate().GoToUrl(DASHBOARD_URL);
+                ChromeDriver.FindElement(By.Id("error-title")).Text.Contains("not available");
 
 
                 return false;
@@ -235,32 +233,32 @@ namespace MicrosoftRewardsBot.BotClasses
 
             Random rnd = new Random();
 
-            chromeDriver.Navigate().GoToUrl(BING_SEARCH_URL);
-            WebDriverWait wait = new WebDriverWait(chromeDriver, TimeSpan.FromSeconds(10));
+            ChromeDriver.Navigate().GoToUrl(BING_SEARCH_URL);
+            WebDriverWait wait = new WebDriverWait(ChromeDriver, TimeSpan.FromSeconds(10));
             try
             {
 
                 wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.Id("id_l")));
                 Thread.Sleep(500);
 
-                while (chromeDriver.FindElement(By.Id("id_l")).Text == "Sign in")
+                while (ChromeDriver.FindElement(By.Id("id_l")).Text == "Sign in")
                 {
-                    chromeDriver.FindElement(By.Id("id_l")).Click();
+                    ChromeDriver.FindElement(By.Id("id_l")).Click();
                     Thread.Sleep(1500);
                 }
             }
             catch (Exception e) { }
 
-            while (PcSearch <= MaxPcSearch && Account.PCPoints <= MaxDesktopPoints)
+            while (PcSearch < MaxPcSearch && Account.PCPoints < MaxDesktopPoints)
             {
                 Thread.Sleep(1000);
                 try
                 {
                     wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.Id("sb_form_q")));
-                    chromeDriver.FindElement(By.Id("sb_form_q")).Clear();
-                    chromeDriver.FindElement(By.Id("sb_form_q")).SendKeys(searchqueries[rnd.Next(searchqueries.Count)]);
+                    ChromeDriver.FindElement(By.Id("sb_form_q")).Clear();
+                    ChromeDriver.FindElement(By.Id("sb_form_q")).SendKeys(searchqueries[rnd.Next(searchqueries.Count)]);
                     Thread.Sleep(1000);
-                    chromeDriver.FindElement(By.Id("sb_form_q")).SendKeys(Keys.Return);
+                    ChromeDriver.FindElement(By.Id("sb_form_q")).SendKeys(Keys.Return);
                 }
                 catch (Exception e)
                 {
@@ -307,7 +305,7 @@ namespace MicrosoftRewardsBot.BotClasses
 
         }
 
-        public async Task<bool> MobileSearch()
+        public async Task<bool> SearchMobileAsync()
         {
 
 
@@ -320,8 +318,8 @@ namespace MicrosoftRewardsBot.BotClasses
 
             try
             {
-                chromeDriver.Navigate().GoToUrl(DASHBOARD_URL);
-                chromeDriver.FindElement(By.Id("error-title")).Text.Contains("not available");
+                ChromeDriver.Navigate().GoToUrl(DASHBOARD_URL);
+                ChromeDriver.FindElement(By.Id("error-title")).Text.Contains("not available");
 
                 return false;
             }
@@ -330,9 +328,9 @@ namespace MicrosoftRewardsBot.BotClasses
             }
             try
             {
-                chromeDriver.Navigate().GoToUrl("https://www.bing.com/rewards/checkuser?ru=/search?q=popular+now+on+bing%26filters=segment%3a%22popularnow.carousel%22%26form=ml10ns%26crea=ml10ns&rnoreward=1");
+                ChromeDriver.Navigate().GoToUrl("https://www.bing.com/rewards/checkuser?ru=/search?q=popular+now+on+bing%26filters=segment%3a%22popularnow.carousel%22%26form=ml10ns%26crea=ml10ns&rnoreward=1");
                 Thread.Sleep(500);
-                chromeDriver.FindElementById("WLSignin").Click();
+                ChromeDriver.FindElementById("WLSignin").Click();
             }
             catch (Exception e)
             {
@@ -351,26 +349,26 @@ namespace MicrosoftRewardsBot.BotClasses
             {
                 Random rnd = new Random();
 
-                chromeDriver.Navigate().GoToUrl(BING_SEARCH_URL);
-                WebDriverWait wait = new WebDriverWait(chromeDriver, TimeSpan.FromSeconds(10));
+                ChromeDriver.Navigate().GoToUrl(BING_SEARCH_URL);
+                WebDriverWait wait = new WebDriverWait(ChromeDriver, TimeSpan.FromSeconds(10));
 
                 Thread.Sleep(500);
 
 
 
 
-                while (MobileSearchV <= MaxMobileSearch && Account.MobilePoints <= MaxMobilePoints)
+                while (MobileSearch <= MaxMobileSearch && Account.MobilePoints <= MaxMobilePoints)
                 {
                     Thread.Sleep(1000);
                     try
                     {
                         wait.Until(ExpectedConditions.ElementIsVisible(By.Id("sb_form_q")));
-                        chromeDriver.FindElement(By.Id("sb_form_q")).Clear();
-                        chromeDriver.FindElement(By.Id("sb_form_q")).SendKeys(searchqueries[rnd.Next(searchqueries.Count)]);
+                        ChromeDriver.FindElement(By.Id("sb_form_q")).Clear();
+                        ChromeDriver.FindElement(By.Id("sb_form_q")).SendKeys(searchqueries[rnd.Next(searchqueries.Count)]);
                         Thread.Sleep(300);
-                        chromeDriver.FindElement(By.Id("sb_form_q")).SendKeys(Keys.Return);
+                        ChromeDriver.FindElement(By.Id("sb_form_q")).SendKeys(Keys.Return);
                         Thread.Sleep(rnd.Next(1000, 4000));
-                        if (MobileSearchV % 10 == 0)
+                        if (MobileSearch % 10 == 0)
                         {
                             Checkpointsmobile();
 
@@ -383,7 +381,7 @@ namespace MicrosoftRewardsBot.BotClasses
                     }
 
 
-                    MobileSearchV += 1;
+                    MobileSearch += 1;
                 }
                 return true;
             }
@@ -399,31 +397,31 @@ namespace MicrosoftRewardsBot.BotClasses
         {
             try
             {
-                for (int i = 1; i <= chromeDriver.WindowHandles.Count; i++)
+                for (int i = 1; i <= ChromeDriver.WindowHandles.Count; i++)
                 {
-                    chromeDriver.SwitchTo().Window(chromeDriver.WindowHandles[i]);
-                    chromeDriver.Close();
+                    ChromeDriver.SwitchTo().Window(ChromeDriver.WindowHandles[i]);
+                    ChromeDriver.Close();
                 }
 
             }
             catch (Exception)
             {
             }
-            chromeDriver.SwitchTo().Window(chromeDriver.WindowHandles[0]);
+            ChromeDriver.SwitchTo().Window(ChromeDriver.WindowHandles[0]);
         }
         private void Checkpoints()
         {
             try
             {
-                chromeDriver.Navigate().GoToUrl("https://account.microsoft.com/rewards/pointsbreakdown");
+                ChromeDriver.Navigate().GoToUrl("https://account.microsoft.com/rewards/pointsbreakdown");
                 try
                 {
-                    chromeDriver.FindElementById("raf-signin-link-id").Click();
-                    chromeDriver.Navigate().GoToUrl("https://account.microsoft.com/rewards/pointsbreakdown");
+                    ChromeDriver.FindElementById("raf-signin-link-id").Click();
+                    ChromeDriver.Navigate().GoToUrl("https://account.microsoft.com/rewards/pointsbreakdown");
                 }
                 catch (Exception) { }
 
-                var k = chromeDriver.FindElements(By.ClassName("pointsBreakdownCard"));
+                var k = ChromeDriver.FindElements(By.ClassName("pointsBreakdownCard"));
                 string[] pcsearch = new string[3];
                 string[] mobilesearch = new string[3];
                 string[] edgesearch = new string[3];
@@ -454,14 +452,14 @@ namespace MicrosoftRewardsBot.BotClasses
                 int.TryParse(edgesearch[1], out _EdgePoints);
                 int.TryParse(edgesearch[2], out _MaxEdgePoints);
 
-                chromeDriver.Navigate().GoToUrl("https://account.microsoft.com/rewards");
-                var TotalP = chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/mee-rewards-user-status/div/mee-banner/div/div/div/div[2]/div[1]/mee-banner-slot-2/mee-rewards-user-status-item/mee-rewards-user-status-balance/div/div/div/div/div/p[1]/mee-rewards-counter-animation/span"));
+                ChromeDriver.Navigate().GoToUrl("https://account.microsoft.com/rewards");
+                var TotalP = ChromeDriver.FindElement(By.XPath("/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/mee-rewards-user-status/div/mee-banner/div/div/div/div[2]/div[1]/mee-banner-slot-2/mee-rewards-user-status-item/mee-rewards-user-status-balance/div/div/div/div/div/p[1]/mee-rewards-counter-animation/span"));
                 Thread.Sleep(800);
 
                 int.TryParse(TotalP.Text.Where(c => char.IsDigit(c)).ToArray(),
                     out temp);
                 Account.TotalPoints = temp;
-                chromeDriver.Navigate().GoToUrl(BING_SEARCH_URL);
+                ChromeDriver.Navigate().GoToUrl(BING_SEARCH_URL);
 
                 return;
             }
@@ -475,9 +473,9 @@ namespace MicrosoftRewardsBot.BotClasses
 
             try
             {
-                chromeDriver.Navigate().GoToUrl("https://account.microsoft.com/rewards/pointsbreakdown");
+                ChromeDriver.Navigate().GoToUrl("https://account.microsoft.com/rewards/pointsbreakdown");
 
-                var k = chromeDriver.FindElements(By.ClassName("pointsBreakdownCard"));
+                var k = ChromeDriver.FindElements(By.ClassName("pointsBreakdownCard"));
                 string[] pcsearch = new string[3];
                 string[] mobilesearch = new string[3];
                 string[] edgesearch = new string[3];
@@ -498,13 +496,13 @@ namespace MicrosoftRewardsBot.BotClasses
                 }
                 int temp;
 
-                var TotalP = chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/mee-rewards-user-status/div/mee-banner/div/div/div/div[2]/div[1]/mee-banner-slot-2/mee-rewards-user-status-item/mee-rewards-user-status-balance/div/div/div/div/div/p[1]/mee-rewards-counter-animation/span"));
+                var TotalP = ChromeDriver.FindElement(By.XPath("/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/mee-rewards-user-status/div/mee-banner/div/div/div/div[2]/div[1]/mee-banner-slot-2/mee-rewards-user-status-item/mee-rewards-user-status-balance/div/div/div/div/div/p[1]/mee-rewards-counter-animation/span"));
                 Thread.Sleep(800);
 
                 int.TryParse(TotalP.Text.Where(c => char.IsDigit(c)).ToArray(),
                     out temp);
                 Account.TotalPoints = temp;
-                chromeDriver.Navigate().GoToUrl(BING_SEARCH_URL);
+                ChromeDriver.Navigate().GoToUrl(BING_SEARCH_URL);
                 try
                 {
                     int.TryParse(pcsearch[1], out temp);
@@ -557,11 +555,11 @@ namespace MicrosoftRewardsBot.BotClasses
             try
             {
 
-                chromeDriver.Navigate().GoToUrl(DASHBOARD_URL);
+                ChromeDriver.Navigate().GoToUrl(DASHBOARD_URL);
                 try
                 {
-                    chromeDriver.FindElement(By.Id("error-title")).Text.Contains("not available");
-                    chromeDriver.Quit();
+                    ChromeDriver.FindElement(By.Id("error-title")).Text.Contains("not available");
+                    ChromeDriver.Quit();
                     return false;
                 }
                 catch (Exception)
@@ -569,7 +567,7 @@ namespace MicrosoftRewardsBot.BotClasses
 
 
                 }
-                var offers = chromeDriver.FindElementsByXPath("//span[contains(@class, 'mee-icon-AddMedium')]/ancestor::a");
+                var offers = ChromeDriver.FindElementsByXPath("//span[contains(@class, 'mee-icon-AddMedium')]/ancestor::a");
                 if (offers.Count > 0)
                 {
 
@@ -578,17 +576,17 @@ namespace MicrosoftRewardsBot.BotClasses
                     foreach (IWebElement link in offers)
                     {
                         Thread.Sleep(1500);
-                        var ct = chromeDriver.WindowHandles[0];
+                        var ct = ChromeDriver.WindowHandles[0];
                         link.Click();
-                        var nt = chromeDriver.WindowHandles[1];
-                        chromeDriver.SwitchTo().Window(nt);
+                        var nt = ChromeDriver.WindowHandles[1];
+                        ChromeDriver.SwitchTo().Window(nt);
                         Thread.Sleep(3500);
                         //driver.ExecuteScript("window.stop()");
 
 
                         try
                         {
-                            chromeDriver.FindElement(By.Id("btoption0"));
+                            ChromeDriver.FindElement(By.Id("btoption0"));
                             Dailypoll();
                             continue;
                         }
@@ -597,12 +595,12 @@ namespace MicrosoftRewardsBot.BotClasses
                         }
                         try
                         {
-                            var btn = chromeDriver.FindElement(By.Id("rqStartQuiz"));
+                            var btn = ChromeDriver.FindElement(By.Id("rqStartQuiz"));
                             btn.Click();
                             Thread.Sleep(1000);
                             try
                             {
-                                chromeDriver.FindElement(By.Id("rqAnswerOptionNum0"));
+                                ChromeDriver.FindElement(By.Id("rqAnswerOptionNum0"));
                                 drag_and_drop_quiz();
                                 continue;
                             }
@@ -611,7 +609,7 @@ namespace MicrosoftRewardsBot.BotClasses
                             }
                             try
                             {
-                                chromeDriver.FindElement(By.Id("rqAnswerOption0"));
+                                ChromeDriver.FindElement(By.Id("rqAnswerOption0"));
                                 lightning_quiz();
                                 continue;
                             }
@@ -624,7 +622,7 @@ namespace MicrosoftRewardsBot.BotClasses
                         { }
                         try
                         {
-                            chromeDriver.FindElementByClassName("wk_Circle");
+                            ChromeDriver.FindElementByClassName("wk_Circle");
                             click_quiz();
                         }
                         catch (Exception e)
@@ -634,7 +632,7 @@ namespace MicrosoftRewardsBot.BotClasses
                         }
                     }
                 }
-                offers = chromeDriver.FindElementsByXPath("//span[contains(@class, 'mee-icon-AddMedium')]/ancestor::a");
+                offers = ChromeDriver.FindElementsByXPath("//span[contains(@class, 'mee-icon-AddMedium')]/ancestor::a");
                 if (offers.Count > 0)
                 {
 
@@ -643,17 +641,17 @@ namespace MicrosoftRewardsBot.BotClasses
                     foreach (IWebElement link in offers)
                     {
                         Thread.Sleep(1500);
-                        var ct = chromeDriver.WindowHandles[0];
+                        var ct = ChromeDriver.WindowHandles[0];
                         link.Click();
-                        var nt = chromeDriver.WindowHandles[1];
-                        chromeDriver.SwitchTo().Window(nt);
+                        var nt = ChromeDriver.WindowHandles[1];
+                        ChromeDriver.SwitchTo().Window(nt);
                         Thread.Sleep(3500);
                         //driver.ExecuteScript("window.stop()");
 
 
                         try
                         {
-                            chromeDriver.FindElement(By.Id("btoption0"));
+                            ChromeDriver.FindElement(By.Id("btoption0"));
                             Dailypoll();
                             continue;
                         }
@@ -662,12 +660,12 @@ namespace MicrosoftRewardsBot.BotClasses
                         }
                         try
                         {
-                            var btn = chromeDriver.FindElement(By.Id("rqStartQuiz"));
+                            var btn = ChromeDriver.FindElement(By.Id("rqStartQuiz"));
                             btn.Click();
                             Thread.Sleep(1000);
                             try
                             {
-                                chromeDriver.FindElement(By.Id("rqAnswerOptionNum0"));
+                                ChromeDriver.FindElement(By.Id("rqAnswerOptionNum0"));
                                 drag_and_drop_quiz();
                                 continue;
                             }
@@ -676,7 +674,7 @@ namespace MicrosoftRewardsBot.BotClasses
                             }
                             try
                             {
-                                chromeDriver.FindElement(By.Id("rqAnswerOption0"));
+                                ChromeDriver.FindElement(By.Id("rqAnswerOption0"));
                                 lightning_quiz();
                                 continue;
                             }
@@ -689,7 +687,7 @@ namespace MicrosoftRewardsBot.BotClasses
                         { }
                         try
                         {
-                            chromeDriver.FindElementByClassName("wk_Circle");
+                            ChromeDriver.FindElementByClassName("wk_Circle");
                             click_quiz();
                         }
                         catch (Exception)
@@ -700,15 +698,15 @@ namespace MicrosoftRewardsBot.BotClasses
                     }
                 }
 
-                _OffersAvailable = chromeDriver.FindElementsByXPath("//span[contains(@class, 'mee-icon-AddMedium')]").Count;
-                chromeDriver.Quit();
+                _IncompleteOffers = ChromeDriver.FindElementsByXPath("//span[contains(@class, 'mee-icon-AddMedium')]").Count;
+                ChromeDriver.Quit();
                 return true;
             }
             catch (Exception e)
             {
 
 
-                _OffersAvailable = 0;
+                _IncompleteOffers = 0;
 
                 return false;
             }
@@ -718,7 +716,7 @@ namespace MicrosoftRewardsBot.BotClasses
         {
             try
             {
-                var html = chromeDriver.FindElementByTagName("html");
+                var html = ChromeDriver.FindElementByTagName("html");
                 for (int i = 0; i < 3; i++)
                 {
                     html.SendKeys(Keys.End);
@@ -738,22 +736,22 @@ namespace MicrosoftRewardsBot.BotClasses
             var rnd = new Random();
             for (int i = 0; i < 10; i++)
             {
-                if (chromeDriver.FindElementsByCssSelector(".cico.btCloseBack").Count != 0)
+                if (ChromeDriver.FindElementsByCssSelector(".cico.btCloseBack").Count != 0)
                 {
-                    chromeDriver.FindElementsByCssSelector(".cico.btCloseBack")[0].Click();
+                    ChromeDriver.FindElementsByCssSelector(".cico.btCloseBack")[0].Click();
 
                 }
-                var choices = chromeDriver.FindElementsByClassName("wk_Circle");
+                var choices = ChromeDriver.FindElementsByClassName("wk_Circle");
                 if (choices.Count != 0)
                 {
                     choices[rnd.Next(choices.Count)].Click();
                     Thread.Sleep(500);
                 }
-                WebDriverWait wait = new WebDriverWait(chromeDriver, TimeSpan.FromSeconds(10));
+                WebDriverWait wait = new WebDriverWait(ChromeDriver, TimeSpan.FromSeconds(10));
                 wait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.ClassName("wk_button")));
-                chromeDriver.FindElementByClassName("wk_button").Click();
+                ChromeDriver.FindElementByClassName("wk_button").Click();
                 Thread.Sleep(2000);
-                if (chromeDriver.FindElementsByCssSelector("span[class=\"rw_icon\"]").Count != 0)
+                if (ChromeDriver.FindElementsByCssSelector("span[class=\"rw_icon\"]").Count != 0)
                 {
                     break;
                 }
@@ -766,27 +764,27 @@ namespace MicrosoftRewardsBot.BotClasses
         {
             for (int i = 0; i < 10; i++)
             {
-                if (chromeDriver.FindElementsById("rqAnswerOption0").Count != 0)
+                if (ChromeDriver.FindElementsById("rqAnswerOption0").Count != 0)
                 {
-                    string firstpage = chromeDriver.FindElementById("rqAnswerOption0").GetAttribute("data-serpquery");
-                    chromeDriver.Navigate().GoToUrl("https://www.bing.com" + firstpage);
+                    string firstpage = ChromeDriver.FindElementById("rqAnswerOption0").GetAttribute("data-serpquery");
+                    ChromeDriver.Navigate().GoToUrl("https://www.bing.com" + firstpage);
                     Thread.Sleep(1500);
                     for (int j = 0; j < 10; j++)
                     {
-                        if (chromeDriver.FindElementsById("rqAnswerOption" + j.ToString()).Count != 0)
+                        if (ChromeDriver.FindElementsById("rqAnswerOption" + j.ToString()).Count != 0)
                         {
-                            chromeDriver.ExecuteScript(string.Format("document.querySelector('#rqAnswerOption{0}').click();", j));
+                            ChromeDriver.ExecuteScript(string.Format("document.querySelector('#rqAnswerOption{0}').click();", j));
                             Thread.Sleep(1500);
                         }
                     }
                 }
                 Thread.Sleep(1500);
-                if (chromeDriver.FindElementsById("quizCompleteContainer").Count != 0)
+                if (ChromeDriver.FindElementsById("quizCompleteContainer").Count != 0)
                 {
                     break;
                 }
             }
-            var quiz = chromeDriver.FindElementsByCssSelector(".cico.btCloseBack");
+            var quiz = ChromeDriver.FindElementsByCssSelector(".cico.btCloseBack");
             if (quiz.Count != 0)
             {
                 quiz[0].Click();
@@ -802,8 +800,8 @@ namespace MicrosoftRewardsBot.BotClasses
             {
                 try
                 {
-                    var drag_options = chromeDriver.FindElementsByClassName("rqOption");
-                    var right_answers = chromeDriver.FindElementsByClassName("correctAnswer");
+                    var drag_options = ChromeDriver.FindElementsByClassName("rqOption");
+                    var right_answers = ChromeDriver.FindElementsByClassName("correctAnswer");
                     List<IWebElement> drag_opt = new List<IWebElement>();
                     if (right_answers.Count != 0)
                     {
@@ -820,7 +818,7 @@ namespace MicrosoftRewardsBot.BotClasses
                         IWebElement choice_a = drag_opt[rnd.Next(drag_opt.Count)];
                         drag_opt.Remove(choice_a);
                         IWebElement choice_b = drag_opt[rnd.Next(drag_opt.Count)];
-                        Actions builder1 = new Actions(chromeDriver);
+                        Actions builder1 = new Actions(ChromeDriver);
                         IAction dragAndDrop1 = builder1.ClickAndHold(choice_a).MoveToElement(choice_b).Release(choice_a).Build();
                         dragAndDrop1.Perform();
                     }
@@ -830,13 +828,13 @@ namespace MicrosoftRewardsBot.BotClasses
                     continue;
                 }
                 Thread.Sleep(500);
-                if (chromeDriver.FindElementsById("quizCompleteContainer").Count != 0)
+                if (ChromeDriver.FindElementsById("quizCompleteContainer").Count != 0)
                 {
                     break;
                 }
             }
             Thread.Sleep(2500);
-            var btn = chromeDriver.FindElementsByCssSelector(".cico.btCloseBack");
+            var btn = ChromeDriver.FindElementsByCssSelector(".cico.btCloseBack");
             if (btn.Count != 0)
             {
                 btn[0].Click();
@@ -849,16 +847,16 @@ namespace MicrosoftRewardsBot.BotClasses
         {
             var random = new Random();
             List<string> choices = new List<string>() { "btoption0", "btoption1" };
-            chromeDriver.FindElement(By.Id(choices[random.Next(choices.Count)])).Click();
+            ChromeDriver.FindElement(By.Id(choices[random.Next(choices.Count)])).Click();
             Thread.Sleep(500);
-            chromeDriver.FindElement(By.Id("rqCloseBtn")).Click();
+            ChromeDriver.FindElement(By.Id("rqCloseBtn")).Click();
             Thread.Sleep(500);
             go_to_main();
         }
         public async Task<bool> BrowserExit()
         {
             var tempid = driverService.ProcessId;
-            chromeDriver.Quit();
+            ChromeDriver.Quit();
             var driverProcessIds = new List<int> { driverService.ProcessId };
             var mos = new System.Management.ManagementObjectSearcher($"Select * From Win32_Process Where ParentProcessID={driverService.ProcessId}");
             foreach (var item in mos.Get())

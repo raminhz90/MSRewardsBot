@@ -4,6 +4,7 @@ using MSRewardsBOT.Core.Contracts.Services;
 using MSRewardsBOT.Core.Models;
 using MSRewardsBOT.Core.Services;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -21,7 +22,7 @@ namespace MicrosoftRewardsBot.BotClasses
         private int _PCProgress;
         private int _MobileProgress;
         private Browser _BrowserInstance;
-        private int _ProxyPort=9050;
+        private int _ProxyPort = 9050;
         public Account Account { get => _Account; set => SetProperty(ref _Account, value); }
         public Tor TorInstance { get => _TorInstance; set => SetProperty(ref _TorInstance, value); }
         private IAccountDataService AccountDataService = new AccountDataService();
@@ -30,11 +31,11 @@ namespace MicrosoftRewardsBot.BotClasses
 
         // Commands
         private ICommand _StartAccount;
-        public ICommand StartAccount => _StartAccount ??= new RelayCommand(StartAllCommand);
+        public ICommand StartAccount => _StartAccount ??= new RelayCommand(StartAllCommandcmd);
         private ICommand _StartDesktop;
         public ICommand StartDesktop => _StartDesktop ??= new RelayCommand(StartDesktopCommand);
         private ICommand _StartMobile;
-        public ICommand StartMobile => _StartMobile ??= new RelayCommand(StartMobileCommand);
+        public ICommand SelectedFarm => _StartMobile ??= new RelayCommand(StartMobileCommand);
 
 
 
@@ -50,7 +51,7 @@ namespace MicrosoftRewardsBot.BotClasses
         public int MobileProgress { get => _MobileProgress; set => SetProperty(ref _MobileProgress, value); }
         public int ProxyPort { get => _ProxyPort; set => _ProxyPort = value; }
 
-        private async void AccounsearchAsync()
+        private async Task AccounsearchAsync()
         {
             TorInstance = new Tor(_Account.ID);
             if (!await _TorInstance.ConnectAsync())
@@ -63,13 +64,13 @@ namespace MicrosoftRewardsBot.BotClasses
                 }
 
             }
-            MobilesearchAsync();
+            await MobilesearchAsync();
             await BrowserInstance.Waiter();
-            DesktopsearcAsync();
+            await DesktopsearcAsync();
             AccountDataService.UpdateAccount(Account);
         }
 
-        private async void DesktopsearcAsync()
+        private async Task DesktopsearcAsync()
         {
             IsPCRunning = true;
             error = false;
@@ -133,12 +134,43 @@ namespace MicrosoftRewardsBot.BotClasses
                 DesktopProgress = 0;
                 return;
             }
+            CleanChromeProfile(Browser.BrowserMode.Desktop, Account.ID);
             DesktopProgress = 100;
             IsPCRunning = false;
+            Account.LastRun = DateTime.Today;
             AccountDataService.UpdateAccount(Account);
         }
 
-        private async void MobilesearchAsync()
+        private void CleanChromeProfile(Browser.BrowserMode bmode, int iD)
+        {
+            string address;
+            if (bmode == Browser.BrowserMode.Desktop) { address = Properties.Resources.ChromeProfileLocation + "de" + Account.ID + "\\"; }
+            else
+            {
+                address = Properties.Resources.ChromeProfileLocation + "mo" + Account.ID + "\\";
+            }
+            var RootDirectories = System.IO.Directory.GetDirectories(Properties.Resources.ChromeProfileLocation);
+
+
+            foreach (var FirstChild in Directory.GetDirectories(address))
+            {
+                if (FirstChild.Contains("Default"))
+                {
+                    foreach (var LastChild in Directory.GetDirectories(FirstChild))
+                    {
+                        Directory.Delete(LastChild, true);
+                    }
+
+                }
+                else
+                {
+                    Directory.Delete(FirstChild, true);
+                }
+            }
+
+        }
+
+        private async Task MobilesearchAsync()
         {
             error = false;
             if (!TorInstance.IsConnectionValid)
@@ -172,7 +204,7 @@ namespace MicrosoftRewardsBot.BotClasses
                 return;
             }
             MobileProgress = 40;
-            if (!await _BrowserInstance.MobileSearch())
+            if (!await _BrowserInstance.SearchMobileAsync())
             {
                 error = true;
                 IsMobileRunning = false;
@@ -189,21 +221,29 @@ namespace MicrosoftRewardsBot.BotClasses
             }
             MobileProgress = 100;
             IsMobileRunning = false;
+            Account.LastRun = DateTime.Today;
             AccountDataService.UpdateAccount(Account);
+            CleanChromeProfile(Browser.BrowserMode.Mobile, Account.ID);
+
         }
 
-        private async void StartAllCommand()
+        public async Task StartAllCommand()
+        {
+
+            await AccounsearchAsync();
+
+
+        }
+        public async void StartAllCommandcmd()
         {
             try
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
-                    AccounsearchAsync();
+                    await AccounsearchAsync();
                 });
             }
             catch (Exception) { }
-
-
 
         }
 
@@ -239,7 +279,7 @@ namespace MicrosoftRewardsBot.BotClasses
         public FarmManager(Account account)
         {
             Account = account;
-            TorInstance = new Tor(Account.ID,ProxyPort);
+            TorInstance = new Tor(Account.ID, ProxyPort);
 
         }
 
