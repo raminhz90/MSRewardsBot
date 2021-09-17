@@ -193,10 +193,10 @@
     <value>.\Tor\tor.exe</value>
   </data>
   <data name="MaxMobileSearch" xml:space="preserve">
-    <value>25</value>
+    <value>40</value>
   </data>
   <data name="MaxPCSearch" xml:space="preserve">
-    <value>50</value>
+    <value>60</value>
   </data>
   <data name="ChromeProfileLocation" xml:space="preserve">
     <value>D:\Testing\</value>
@@ -206,5 +206,23 @@
   </data>
   <data name="ShellSettingsPage" xml:space="preserve">
     <value>sdahds</value>
+  </data>
+  <data name="BING_SEARCH_URL" xml:space="preserve">
+    <value>https://www.bing.com/search</value>
+  </data>
+  <data name="Dashboard_Url" xml:space="preserve">
+    <value>https://account.microsoft.com/rewards/dashboard</value>
+  </data>
+  <data name="Login_page" xml:space="preserve">
+    <value>https://login.live.com/</value>
+  </data>
+  <data name="PonisBreakdownPage" xml:space="preserve">
+    <value>https://account.microsoft.com/rewards/pointsbreakdown</value>
+  </data>
+  <data name="TotalPointsXPath" xml:space="preserve">
+    <value>/html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/mee-rewards-user-status/div/mee-banner/div/div/div/div[2]/div[1]/mee-banner-slot-2/mee-rewards-user-status-item/mee-rewards-user-status-balance/div/div/div/div/div/p[1]/mee-rewards-counter-animation/span</value>
+  </data>
+  <data name="TotalPointsXPathm" xml:space="preserve">
+    <value>//*[@class="balance ng-binding"]</value>
   </data>
 </root>

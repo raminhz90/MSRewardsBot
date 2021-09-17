@@ -70,6 +70,15 @@ namespace MicrosoftRewardsBot.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to https://www.bing.com/search.
+        /// </summary>
+        public static string BING_SEARCH_URL {
+            get {
+                return ResourceManager.GetString("BING_SEARCH_URL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Blank.
         /// </summary>
         public static string BlankPageTitle {
@@ -84,6 +93,15 @@ namespace MicrosoftRewardsBot.Properties {
         public static string ChromeProfileLocation {
             get {
                 return ResourceManager.GetString("ChromeProfileLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to https://account.microsoft.com/rewards/dashboard.
+        /// </summary>
+        public static string Dashboard_Url {
+            get {
+                return ResourceManager.GetString("Dashboard_Url", resourceCulture);
             }
         }
         
@@ -115,6 +133,15 @@ namespace MicrosoftRewardsBot.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to https://login.live.com/.
+        /// </summary>
+        public static string Login_page {
+            get {
+                return ResourceManager.GetString("Login_page", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Main.
         /// </summary>
         public static string MainPageTitle {
@@ -124,7 +151,7 @@ namespace MicrosoftRewardsBot.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 25.
+        ///   Looks up a localized string similar to 40.
         /// </summary>
         public static string MaxMobileSearch {
             get {
@@ -133,11 +160,20 @@ namespace MicrosoftRewardsBot.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 50.
+        ///   Looks up a localized string similar to 60.
         /// </summary>
         public static string MaxPCSearch {
             get {
                 return ResourceManager.GetString("MaxPCSearch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to https://account.microsoft.com/rewards/pointsbreakdown.
+        /// </summary>
+        public static string PonisBreakdownPage {
+            get {
+                return ResourceManager.GetString("PonisBreakdownPage", resourceCulture);
             }
         }
         
@@ -327,6 +363,24 @@ namespace MicrosoftRewardsBot.Properties {
         public static string TorAddress {
             get {
                 return ResourceManager.GetString("TorAddress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /html/body/div[1]/div[2]/main/div/ui-view/mee-rewards-dashboard/main/mee-rewards-user-status/div/mee-banner/div/div/div/div[2]/div[1]/mee-banner-slot-2/mee-rewards-user-status-item/mee-rewards-user-status-balance/div/div/div/div/div/p[1]/mee-rewards-counter-animation/span.
+        /// </summary>
+        public static string TotalPointsXPath {
+            get {
+                return ResourceManager.GetString("TotalPointsXPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to //*[@class=&quot;balance ng-binding&quot;].
+        /// </summary>
+        public static string TotalPointsXPathm {
+            get {
+                return ResourceManager.GetString("TotalPointsXPathm", resourceCulture);
             }
         }
     }

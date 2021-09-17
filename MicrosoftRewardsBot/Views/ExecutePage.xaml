@@ -10,7 +10,7 @@
     xmlns:models="clr-namespace:MicrosoftRewardsBot.Models"
     xmlns:properties="clr-namespace:MicrosoftRewardsBot.Properties"
     xmlns:uc="clr-namespace:MicrosoftRewardsBot.CustomControls"
-    xmlns:ui="http://schemas.modernwpf.com/2019" xmlns:botclasses="clr-namespace:MicrosoftRewardsBot.BotClasses" d:DataContext="{d:DesignInstance Type=botclasses:FarmManager}"
+    xmlns:ui="http://schemas.modernwpf.com/2019" xmlns:botclasses="clr-namespace:MicrosoftRewardsBot.BotClasses" xmlns:viewmodels="clr-namespace:MicrosoftRewardsBot.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:ExecutePageVM}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -35,8 +35,81 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <Grid
+            Grid.Row="0">
+            <StackPanel
+                Orientation="Horizontal"
+                HorizontalAlignment="Center">
+                
+                <ui:CommandBar>
+                    <ui:AppBarElementContainer VerticalAlignment="Stretch">
+                        <ui:DropDownButton  AutomationProperties.Name="Single Account"  HorizontalAlignment="Center" Height="{Binding ActualHeight,RelativeSource={RelativeSource AncestorType=ui:AppBarElementContainer}}">
+                            
+                            <ui:DropDownButton.Content>
+                                <StackPanel VerticalAlignment="Stretch">
+                                    <Label Content="Single Account"/>
+                                </StackPanel>
+                            </ui:DropDownButton.Content>
+                            <ui:DropDownButton.Flyout>
+                                <ui:CommandBarFlyout Placement="BottomEdgeAlignedLeft">
+                                    <ui:CommandBarFlyout.SecondaryCommands>
+                                        <ui:AppBarButton Label="Start All Modes" Command="{Binding SelectedFarm.StartAccount}">
+                                            <ui:AppBarButton.Icon>
+                                                <ui:FontIcon Glyph="&#xE725;" />
+                                            </ui:AppBarButton.Icon>
+                                        </ui:AppBarButton>
+                                        <ui:AppBarButton Label="Start Desktop" Command="{Binding SelectedFarm.StartDesktop}">
+                                            <ui:AppBarButton.Icon>
+                                                <ui:FontIcon Glyph="&#xE8CA;" />
+                                            </ui:AppBarButton.Icon>
+                                        </ui:AppBarButton>
+                                        <ui:AppBarButton Label="Start Mobile" Command="{Binding SelectedFarm.SelectedFarm}">
+                                            <ui:AppBarButton.Icon>
+                                                <ui:FontIcon Glyph="&#xE8C2;" />
+                                            </ui:AppBarButton.Icon>
+                                        </ui:AppBarButton>
+                                    </ui:CommandBarFlyout.SecondaryCommands>
+                                </ui:CommandBarFlyout>
+                            </ui:DropDownButton.Flyout>
+                        </ui:DropDownButton>
+                    </ui:AppBarElementContainer>
+                    <ui:AppBarElementContainer VerticalAlignment="Stretch">
+                        <ui:DropDownButton   HorizontalAlignment="Center" Height="{Binding ActualHeight,RelativeSource={RelativeSource AncestorType=ui:AppBarElementContainer}}">
 
-        <ui:CommandBar
+                            <ui:DropDownButton.Content>
+                                <StackPanel VerticalAlignment="Stretch">
+                                    <Label Content="Manual Browser"/>
+                                </StackPanel>
+                            </ui:DropDownButton.Content>
+                            <ui:DropDownButton.Flyout>
+                                <ui:CommandBarFlyout Placement="BottomEdgeAlignedLeft">
+                                    <ui:CommandBarFlyout.SecondaryCommands>
+                                        <ui:AppBarButton Label="Start Desktop">
+                                            <ui:AppBarButton.Icon>
+                                                <ui:FontIcon Glyph="&#xE8CA;" />
+                                            </ui:AppBarButton.Icon>
+                                        </ui:AppBarButton>
+                                        <ui:AppBarButton Label="Start Mobile">
+                                            <ui:AppBarButton.Icon>
+                                                <ui:FontIcon Glyph="&#xE8C2;" />
+                                            </ui:AppBarButton.Icon>
+                                        </ui:AppBarButton>
+                                    </ui:CommandBarFlyout.SecondaryCommands>
+                                </ui:CommandBarFlyout>
+                            </ui:DropDownButton.Flyout>
+                        </ui:DropDownButton>
+                    </ui:AppBarElementContainer>
+
+                    <ui:AppBarButton x:Name="addButton" Icon="People" Label="Start All" Command="{Binding StartAllAccounts}"  />
+                    <ui:AppBarButton x:Name="editButton" Icon="Edit" Label="Edit"  />
+                    <ui:AppBarButton x:Name="shareButton" Icon="Share" Label="Share" />
+
+                </ui:CommandBar>
+            </StackPanel>
+            
+        </Grid>
+
+        <!--<ui:CommandBar Visibility="Hidden"
             x:Name="PrimaryCommandBar"
             Grid.Row="0"
             HorizontalContentAlignment="Center"
@@ -62,7 +135,7 @@
                     Icon="Setting"
                     Label="Settings" />
             </ui:CommandBar.SecondaryCommands>
-        </ui:CommandBar>
+        </ui:CommandBar>-->
 
         <Grid Grid.Row="1">
             <Grid VerticalAlignment="Stretch">
@@ -75,16 +148,16 @@
                     ItemTemplate="{DynamicResource ListViewItemTemplate}"
                     ItemsSource="{Binding Farms}"
                     SelectedIndex="1"
-                    SelectedItem="{Binding SelectedFarm}" />
+                    SelectedItem="{Binding SelectedFarm,Mode=TwoWay}" />
                 <Grid
                     Grid.Column="1"
                     Margin="{DynamicResource MediumLeftTopRightBottomMargin}"
                     DataContext="{Binding SelectedFarm}">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="3.5*" />
-                            <ColumnDefinition Width="1.5*" MinWidth="180" />
-                            <ColumnDefinition Width="3.5*" />
+                            <ColumnDefinition Width="5*" MinWidth="220" />
+                            <ColumnDefinition Width="1*" MinWidth="180" />
+                            <ColumnDefinition Width="5*" MinWidth="220"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto" />
@@ -101,7 +174,7 @@
                                     <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
                                 </Style>
                             </Grid.Resources>
-                            <StackPanel HorizontalAlignment="Center">
+                            <StackPanel HorizontalAlignment="Stretch">
                                 <Label Content="{Binding Account.UserName}" HorizontalAlignment="Center" FontSize="20"/>
                                 <hc:WaveProgressBar
                                     Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}}"

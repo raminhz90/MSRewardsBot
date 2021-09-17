@@ -14,7 +14,7 @@ namespace MicrosoftRewardsBot.BotClasses
     public class FarmManager : ObservableObject
     {
         // Private Fields
-        private bool error;
+        private bool _Error;
         private Tor _TorInstance;
         private Account _Account;
         private bool _IsPCRunning;
@@ -43,13 +43,22 @@ namespace MicrosoftRewardsBot.BotClasses
 
         // Public Fields
 
-        public bool Error { get => error; set => SetProperty(ref error, value); }
+        public bool Error { get => _Error; set => SetProperty(ref _Error, value); }
         public bool IsMobileRunning { get => _IsMobileRuning; set => SetProperty(ref _IsMobileRuning, value); }
         public bool IsPCRunning { get => _IsPCRunning; set => SetProperty(ref _IsPCRunning, value); }
         public int DesktopProgress { get => _PCProgress; set => SetProperty(ref _PCProgress, value); }
         public Browser BrowserInstance { get => _BrowserInstance; set => SetProperty(ref _BrowserInstance, value); }
         public int MobileProgress { get => _MobileProgress; set => SetProperty(ref _MobileProgress, value); }
         public int ProxyPort { get => _ProxyPort; set => _ProxyPort = value; }
+
+
+        public FarmManager(Account account)
+        {
+            Account = account;
+            TorInstance = new Tor(Account.ID, ProxyPort);
+
+        }
+
 
         private async Task AccounsearchAsync()
         {
@@ -59,13 +68,13 @@ namespace MicrosoftRewardsBot.BotClasses
                 var task = _TorInstance.ConnectAsync();
                 if (await Task.WhenAny(task, Task.Delay(3000)) != task || !task.Result)
                 {
-                    error = true;
+                    Account.IsError = true;
                     return;
                 }
 
             }
             await MobilesearchAsync();
-            await BrowserInstance.Waiter();
+            BrowserInstance.Waiter();
             await DesktopsearcAsync();
             AccountDataService.UpdateAccount(Account);
         }
@@ -73,13 +82,13 @@ namespace MicrosoftRewardsBot.BotClasses
         private async Task DesktopsearcAsync()
         {
             IsPCRunning = true;
-            error = false;
+            Account.IsError = false;
             DesktopProgress = 5;
             if (!TorInstance.IsConnectionValid)
             {
                 if (!await _TorInstance.ConnectAsync())
                 {
-                    error = true;
+                    Account.IsError = true;
                     IsPCRunning = false;
 
                     DesktopProgress = 0;
@@ -90,47 +99,53 @@ namespace MicrosoftRewardsBot.BotClasses
             BrowserInstance = new Browser(Account);
             BrowserInstance.Gettrending();
             DesktopProgress = 15;
-            if (!await BrowserInstance.Browsersetup(Browser.BrowserMode.Desktop))
+            if (! BrowserInstance.Browsersetup(Browser.BrowserMode.Desktop))
             {
-                error = true;
+                Account.IsError = true;
                 IsPCRunning = false;
                 DesktopProgress = 0;
+                BrowserInstance.BrowserExit();
                 return;
             }
             DesktopProgress = 25;
-            if (!await BrowserInstance.Login())
+            if (! BrowserInstance.Login())
             {
-                error = true;
+                Account.IsError = true;
                 IsPCRunning = false;
 
+                BrowserInstance.BrowserExit();
                 DesktopProgress = 0;
                 return;
             }
             DesktopProgress = 30;
-            if (!await BrowserInstance.DesktopSearch())
+            if (! BrowserInstance.SearchDesktop())
             {
-                error = true;
+                Account.IsError = true;
                 IsPCRunning = false;
 
+                BrowserInstance.BrowserExit();
                 DesktopProgress = 0;
                 return;
             }
             DesktopProgress = 60;
 
-            if (!await BrowserInstance.Dailyoffers())
+            if (!BrowserInstance.Dailyoffers())
             {
-                error = true;
+                Account.IsError = true;
                 IsPCRunning = false;
 
+                BrowserInstance.BrowserExit();
                 DesktopProgress = 0;
                 return;
             }
             DesktopProgress = 90;
-            if (!await _BrowserInstance.BrowserExit())
+            AccountDataService.UpdateAccount(Account);
+            if (!BrowserInstance.BrowserExit())
             {
-                error = true;
+                Account.IsError = true;
                 IsPCRunning = false;
 
+                BrowserInstance.BrowserExit();
                 DesktopProgress = 0;
                 return;
             }
@@ -138,9 +153,120 @@ namespace MicrosoftRewardsBot.BotClasses
             DesktopProgress = 100;
             IsPCRunning = false;
             Account.LastRun = DateTime.Today;
-            AccountDataService.UpdateAccount(Account);
         }
 
+        private async Task MobilesearchAsync()
+        {
+            Account.IsError = false;
+            if (!TorInstance.IsConnectionValid)
+            {
+                if (!await _TorInstance.ConnectAsync())
+                {
+                    Account.IsError = true;
+                    IsMobileRunning = false;
+                    MobileProgress = 0;
+                    _TorInstance.ExitTor();
+                    return;
+                }
+
+            }
+
+            BrowserInstance = new Browser(Account);
+            BrowserInstance.Gettrending();
+            if (!BrowserInstance.Browsersetup(Browser.BrowserMode.Mobile))
+            {
+                Account.IsError = true;
+                IsMobileRunning = false;
+                MobileProgress = 0;
+                BrowserInstance.BrowserExit();
+                return;
+            }
+            IsMobileRunning = true;
+            MobileProgress = 20;
+            if (!BrowserInstance.Login())
+            {
+                Account.IsError = true;
+                IsMobileRunning = false;
+                MobileProgress = 0;
+                BrowserInstance.BrowserExit();
+                return;
+            }
+            MobileProgress = 40;
+            if (! _BrowserInstance.SearchMobileAsync())
+            {
+                Account.IsError = true;
+                IsMobileRunning = false;
+                MobileProgress = 0;
+                BrowserInstance.BrowserExit();
+                return;
+            }
+            MobileProgress = 84;
+            AccountDataService.UpdateAccount(Account);
+            if (! BrowserInstance.BrowserExit())
+            {
+                Account.IsError = true;
+                IsMobileRunning = false;
+                MobileProgress = 0;
+                BrowserInstance.BrowserExit();
+                return;
+            }
+            MobileProgress = 100;
+            IsMobileRunning = false;
+            Account.LastRun = DateTime.Today;
+            CleanChromeProfile(Browser.BrowserMode.Mobile, Account.ID);
+
+        }
+
+        public async Task StartAllCommand()
+        {
+
+            await AccounsearchAsync();
+
+
+        }
+        public async void StartAllCommandcmd()
+        {
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    await AccounsearchAsync();
+                });
+            }
+            catch (Exception) { }
+
+        }
+
+        private async void StartDesktopCommand()
+        {
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    await DesktopsearcAsync();
+                });
+            }
+            catch (Exception) { }
+
+
+
+        }
+        private async void StartMobileCommand()
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    MobilesearchAsync();
+                });
+            }
+            catch (Exception) { }
+
+
+
+        }
+
+        
         private void CleanChromeProfile(Browser.BrowserMode bmode, int iD)
         {
             string address;
@@ -170,118 +296,6 @@ namespace MicrosoftRewardsBot.BotClasses
 
         }
 
-        private async Task MobilesearchAsync()
-        {
-            error = false;
-            if (!TorInstance.IsConnectionValid)
-            {
-                if (!await _TorInstance.ConnectAsync())
-                {
-                    error = true;
-                    IsMobileRunning = false;
-                    MobileProgress = 0;
-                    return;
-                }
-
-            }
-
-            BrowserInstance = new Browser(Account);
-            BrowserInstance.Gettrending();
-            if (!await BrowserInstance.Browsersetup(Browser.BrowserMode.Mobile))
-            {
-                error = true;
-                IsMobileRunning = false;
-                MobileProgress = 0;
-                return;
-            }
-            IsMobileRunning = true;
-            MobileProgress = 20;
-            if (!await BrowserInstance.Login())
-            {
-                error = true;
-                IsMobileRunning = false;
-                MobileProgress = 0;
-                return;
-            }
-            MobileProgress = 40;
-            if (!await _BrowserInstance.SearchMobileAsync())
-            {
-                error = true;
-                IsMobileRunning = false;
-                MobileProgress = 0;
-                return;
-            }
-            MobileProgress = 84;
-            if (!await _BrowserInstance.BrowserExit())
-            {
-                error = true;
-                IsMobileRunning = false;
-                MobileProgress = 0;
-                return;
-            }
-            MobileProgress = 100;
-            IsMobileRunning = false;
-            Account.LastRun = DateTime.Today;
-            AccountDataService.UpdateAccount(Account);
-            CleanChromeProfile(Browser.BrowserMode.Mobile, Account.ID);
-
-        }
-
-        public async Task StartAllCommand()
-        {
-
-            await AccounsearchAsync();
-
-
-        }
-        public async void StartAllCommandcmd()
-        {
-            try
-            {
-                await Task.Run(async () =>
-                {
-                    await AccounsearchAsync();
-                });
-            }
-            catch (Exception) { }
-
-        }
-
-        private async void StartDesktopCommand()
-        {
-            try
-            {
-                await Task.Run(() =>
-                {
-                    DesktopsearcAsync();
-                });
-            }
-            catch (Exception) { }
-
-
-
-        }
-        private async void StartMobileCommand()
-        {
-            try
-            {
-                await Task.Run(() =>
-                {
-                    MobilesearchAsync();
-                });
-            }
-            catch (Exception) { }
-
-
-
-        }
-
-        public FarmManager(Account account)
-        {
-            Account = account;
-            TorInstance = new Tor(Account.ID, ProxyPort);
-
-        }
 
 
     }

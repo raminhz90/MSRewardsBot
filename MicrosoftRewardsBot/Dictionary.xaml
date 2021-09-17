@@ -46,6 +46,7 @@
             </ui:SimpleStackPanel>
         </Grid>
     </ControlTemplate>
+
     <Style x:Key="OptionsPanelStyle" TargetType="ui:SimpleStackPanel">
         <Setter Property="Spacing" Value="12" />
         <Style.Resources>

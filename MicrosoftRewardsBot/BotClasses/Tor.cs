@@ -160,6 +160,7 @@ namespace MicrosoftRewardsBot.BotClasses
         // Checks IP Address to be from US
         private async Task<bool> CheckCountry(string ip, int id = 9050)
         {
+
             using (var httpClient = new HttpClient(new SocksPortHandler("127.0.0.1", socksPort: id)))
             {
                 var cl = await httpClient.GetAsync("http://ip-api.com/line/" + ip + "?fields=countryCode");
@@ -183,7 +184,7 @@ namespace MicrosoftRewardsBot.BotClasses
 
             return true;
         }
-        private void ExitTor()
+        public void ExitTor()
         {
             try
             {
